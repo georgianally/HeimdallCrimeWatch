@@ -7,13 +7,13 @@
     tools:context=".view.MoreDetailsActivity">
 
     <com.example.heimdallcrimewatch.model.Header
-        android:id="@+id/headerlayout"
+        android:id="@+id/header_layout"
         android:layout_width="411dp"
         android:layout_height="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></com.example.heimdallcrimewatch.model.Header>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -23,13 +23,11 @@
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="Crime Details"
+        android:text="@string/crime_details"
         android:textSize="36sp"
         app:layout_constraintEnd_toStartOf="@+id/categoryImageView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerlayout" />
+        app:layout_constraintTop_toBottomOf="@+id/header_layout" />
 
     <ImageView
         android:id="@+id/categoryImageView"
@@ -37,11 +35,12 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerlayout"
-        app:srcCompat="@drawable/antisocial" />
+        app:layout_constraintTop_toBottomOf="@+id/header_layout"
+        app:srcCompat="@drawable/antisocial"
+        android:contentDescription="@string/crime_image" />
 
     <TextView
         android:id="@+id/crimeTextView"
@@ -49,8 +48,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="32dp"
-        android:text="Crime"
+        android:layout_marginTop="16dp"
+        android:text="@string/crime"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
@@ -61,8 +60,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="32dp"
-        android:text="Outcome"
+        android:layout_marginTop="24dp"
+        android:text="@string/outcome"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/crimeDataTextview" />
@@ -73,8 +72,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="32dp"
-        android:text="Location"
+        android:layout_marginTop="24dp"
+        android:text="@string/location"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/outcomeDataTextView" />
@@ -83,8 +82,7 @@
         android:id="@+id/crimeDataTextview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Category: "
+        android:text="@string/category"
         app:layout_constraintStart_toStartOf="@+id/crimeTextView"
         app:layout_constraintTop_toBottomOf="@+id/crimeTextView" />
 
@@ -92,8 +90,7 @@
         android:id="@+id/outcomeDataTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Outcome:"
+        android:text="@string/outcome_sign"
         app:layout_constraintStart_toStartOf="@+id/outcomeTextView"
         app:layout_constraintTop_toBottomOf="@+id/outcomeTextView" />
 
@@ -101,8 +98,38 @@
         android:id="@+id/locationDataTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Lat: "
+        android:text="@string/lat"
         app:layout_constraintStart_toStartOf="@+id/locationTextView"
         app:layout_constraintTop_toBottomOf="@+id/locationTextView" />
+
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="342dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/back"
+        android:textColor="@color/buttonTextColour"
+        android:background="@drawable/btn_round_left"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        map:layout_constraintBottom_toTopOf="@+id/backButton"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/locationDataTextView"
+        tools:context=".view.MoreDetailsActivity" />
 </android.support.constraint.ConstraintLayout>

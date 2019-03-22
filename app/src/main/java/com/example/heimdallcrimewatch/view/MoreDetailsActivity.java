@@ -4,72 +4,50 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.example.heimdallcrimewatch.R;
 import com.example.heimdallcrimewatch.model.Crime;
 import com.example.heimdallcrimewatch.model.Header;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MoreDetailsActivity extends AppCompatActivity {
+public class MoreDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
+    private ImageView categoryImageView;
 
-    /*
-    TextView id;
-    TextView category;
-    TextView locationType;
-    TextView month;
-    TextView streetName;
-    TextView latitude;
-    TextView longitude;
-    TextView outcomeCategory;
-    TextView outcomeDate;
-    */
-
-    ImageView categoryImageView;
-
-    TextView crimeData;
-    TextView outcomeData;
-    TextView locationData;
+    private TextView crimeData;
+    private TextView outcomeData;
+    private TextView locationData;
+    private Button backButton;
+    private String categoryText;
+    private Crime crime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_more_details);
 
-        /*final int abTitleId = getResources().getIdentifier("action_bar_title", "id", "android");
-        findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent homeIntent = new Intent(MoreDetailsActivity.this, MainActivity.class);
-                homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(homeIntent);
-            }
-        });
-        */
-
-        Header header = (Header) findViewById(R.id.headerlayout);
+        Header header = findViewById(R.id.header_layout);
         header.initHeader();
-/*
-        id = (TextView) findViewById(R.id.idTextView);
-        category = (TextView) findViewById(R.id.categoryTextView);
-        locationType = (TextView) findViewById(R.id.locationTypeTextView);
-        month = (TextView) findViewById(R.id.monthTextView);
-        streetName = (TextView) findViewById(R.id.streetNameTextView);
-        latitude = (TextView) findViewById(R.id.latitudeTextView);
-        longitude = (TextView) findViewById(R.id.longitudeTextView);
-        outcomeCategory = (TextView) findViewById(R.id.outcomeCategoryTextView);
-        outcomeDate = (TextView) findViewById(R.id.outcomeDateTextView);*/
 
-        categoryImageView = (ImageView) findViewById(R.id.categoryImageView);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
-        crimeData = (TextView) findViewById(R.id.crimeDataTextview);
-        outcomeData = (TextView) findViewById(R.id.outcomeDataTextView);
-        locationData = (TextView) findViewById(R.id.locationDataTextView);
+        categoryImageView = findViewById(R.id.categoryImageView);
+        crimeData = findViewById(R.id.crimeDataTextview);
+        outcomeData = findViewById(R.id.outcomeDataTextView);
+        locationData = findViewById(R.id.locationDataTextView);
+        backButton = findViewById(R.id.backButton);
 
         Bundle bundle = getIntent().getExtras();
-        Crime crime = (Crime) bundle.getParcelable("crimeData");
-        String categoryText = crime.getCategory();
+        crime = bundle.getParcelable("crimeData");
+        categoryText = crime.getCategory();
 
         crimeData.setText("ID: " + crime.getId() + "\n" +
                 "Category: " + categoryText + "\n" +
@@ -83,18 +61,22 @@ public class MoreDetailsActivity extends AppCompatActivity {
                 "Latitude: " + crime.getLatitude() + "\n" +
                 "Longitude: " + crime.getLongitude());
 
-        /*
-        id.setText(id.getText() + crime.getId());
-        category.setText(category.getText() + categoryText);
-        locationType.setText(locationType.getText() + crime.getLocationType());
-        month.setText(month.getText() + crime.getMonth());
-        streetName.setText(streetName.getText() + crime.getStreetName());
-        latitude.setText(latitude.getText() + crime.getLatitude());
-        longitude.setText(longitude.getText() + crime.getLongitude());
-        outcomeCategory.setText(outcomeCategory.getText() + crime.getOutcomeCategory());
-        outcomeDate.setText(outcomeDate.getText() + crime.getOutcomeDate());*/
-
         setImage(categoryText);
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        GoogleMap mMap = googleMap;
+        LatLng location = new LatLng(Double.parseDouble(crime.getLatitude()), Double.parseDouble(crime.getLongitude()));
+        mMap.addMarker(new MarkerOptions().position(location).title(categoryText));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 16));
     }
 
     public void onClicked(View view){

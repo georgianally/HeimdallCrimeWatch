@@ -2,30 +2,40 @@ package com.example.heimdallcrimewatch.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Crime implements Parcelable {
-    String id;
-    String category;
-    String locationType; //the type of the location. Either Force or BTP: Force indicates a normal police force location; BTP indicates a British Transport Police location. BTP locations fall within normal police force boundaries.
-    String month;
-    String streetName; //name of street
-    String latitude;
-    String longitude;
-    String outcomeCategory;
-    String outcomeDate;
+    private String id;
+    private String category;
+    private String locationType; //the type of the location. Either Force or BTP: Force indicates a normal police force location; BTP indicates a British Transport Police location. BTP locations fall within normal police force boundaries.
+    private String month;
+    private String streetName; //name of street
+    private String latitude;
+    private String longitude;
+    private String outcomeCategory;
+    private String outcomeDate;
 
-    public Crime(String id, String category, String locationType, String month, String streetName, String latitude, String longitude, String outcomeCategory, String outcomeDate) {
-        this.id = id;
-        this.category = category;
-        this.locationType = locationType;
-        this.month = month;
-        this.streetName = streetName;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.outcomeCategory = outcomeCategory;
-        this.outcomeDate = outcomeDate;
+    public Crime(JSONObject object){
+        try {
+            id = object.get("id").toString();
+            category = object.get("category").toString();
+            locationType = object.get("location_type").toString();
+            month = object.get("month").toString();
+            streetName = object.getJSONObject("location").getJSONObject("street").get("name").toString();
+            latitude = object.getJSONObject("location").get("latitude").toString();
+            longitude = object.getJSONObject("location").get("longitude").toString();
+        if(object.isNull("outcome_status")){
+            outcomeCategory = "No Data";
+            outcomeDate = "No Data";
+        } else {
+            outcomeCategory = object.getJSONObject("outcome_status").get("category").toString();
+            outcomeDate = object.getJSONObject("outcome_status").get("date").toString();
+        }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
-
 
     public String getCategory() {
         return category;
@@ -67,6 +77,46 @@ public class Crime implements Parcelable {
         return longitude;
     }
 
+    public String getImage(){
+        String icon = "❌";
+        switch (category){
+            case "anti-social-behaviour":
+                icon = "🗯️";
+                break;
+            case "bicycle-theft":
+                icon = "🚲";
+                break;
+            case "burglary":
+            case "other-theft":
+            case "robbery":
+            case "shoplifting":
+            case "theft-from-the-person":
+                icon = "💰";
+                break;
+            case "criminal-damage-arson":
+                icon = "🔨";
+                break;
+            case "drugs":
+                icon = "💊";
+                break;
+            case "possession-of-weapons":
+                icon = "🗡";
+                break;
+            case "public-order":
+                icon = "👎";
+                break;
+            case "vehicle-crime":
+                icon = "🚗";
+                break;
+            case "violent-crime":
+                icon = "🤜";
+                break;
+            case "other-crime":
+                break;
+        }
+        return icon;
+    }
+
 //parcel stuff
 
     @Override
@@ -74,7 +124,7 @@ public class Crime implements Parcelable {
         return 0;
     }
 
-    protected Crime(Parcel in) {
+    private Crime(Parcel in) {
         id = in.readString();
         category = in.readString();
         locationType = in.readString();

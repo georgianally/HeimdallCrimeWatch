@@ -3,17 +3,16 @@ package com.example.heimdallcrimewatch.view;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
+import android.widget.Toast;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -21,40 +20,36 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.heimdallcrimewatch.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button currentLocationButton;
-    Button enterPostcodeButton;
-    Button submitPostcodeButton;
-    EditText postcodePlainText;
-    Button savedLocationsButton;
+    private Button currentLocationButton;
+    private Button enterPostcodeButton;
+    private Button submitPostcodeButton;
+    private EditText postcodePlainText;
+    private Button savedLocationsButton;
 
-    static String lat;
-    static String lng;
+    private static String lat;
+    private static String lng;
 
-    RequestQueue requestQueue;
-    String baseURL = "https://api.postcodes.io/postcodes/";
-    String url;
-
-    LocationManager locationManager;
-    //LocationListener locationListener;
-
+    private RequestQueue requestQueue;
+    private final String baseURL = "https://api.postcodes.io/postcodes/";
+    private String url;
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        currentLocationButton = (Button) findViewById(R.id.currentLocationButton);
-        enterPostcodeButton = (Button) findViewById(R.id.enterPostcodeButton);
-        submitPostcodeButton = (Button) findViewById(R.id.submitPostcodeButton);
-        savedLocationsButton = (Button) findViewById(R.id.savedLocationsButton);
-        postcodePlainText = (EditText) findViewById(R.id.postcodePlainText);
+        currentLocationButton = findViewById(R.id.currentLocationButton);
+        enterPostcodeButton = findViewById(R.id.enterPostcodeButton);
+        submitPostcodeButton = findViewById(R.id.submitPostcodeButton);
+        savedLocationsButton = findViewById(R.id.savedLocationsButton);
+        postcodePlainText = findViewById(R.id.postcodePlainText);
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
@@ -62,11 +57,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                getLocation();
+                boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                if(isGPSEnabled) {
+                    getLocation();
+                }
             }
         });
-
-
 
         submitPostcodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /*
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
@@ -106,15 +103,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    */
 
-    public void toggleView(View view){
+    private void toggleView(View view){
         if(view.getVisibility()==View.GONE)
             view.setVisibility(View.VISIBLE);
         else if(view.getVisibility()==View.VISIBLE)
             view.setVisibility(View.GONE);
     }
 
-    void getLocation() {
+    private void getLocation() {
         try {
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             lat = String.valueOf(location.getLatitude());
@@ -127,18 +125,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void convertPostcode(){
+    private void convertPostcode(){
         requestQueue = Volley.newRequestQueue(this);
-
         this.url = this.baseURL + postcodePlainText.getText().toString();
-
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, (String)null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-
                         if(response.isNull("result")){
                             lat = "No Data";
                             lng = "No Data";
@@ -157,8 +152,10 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO: Handle error
-
+                        NetworkResponse networkResponse = error.networkResponse;
+                        if(networkResponse.statusCode == 404){
+                            Toasty.error(MainActivity.this, "Postcode Not Found", Toast.LENGTH_LONG, true).show();
+                        }
                     }
                 });
         requestQueue.add(jsonObjectRequest);
@@ -168,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, DataDisplayActivity.class);
         intent.putExtra("latitude", lat);
         intent.putExtra("longitude", lng);
-        Log.d("Lat", lat + " " + lng);
         startActivity(intent);
     }
 }

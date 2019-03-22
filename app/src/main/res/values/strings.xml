@@ -40,4 +40,27 @@
         <item>2018</item>
     </string-array>
     <string name="title_activity_maps">Map</string>
+    <string name="heimdall_ncrime_watch">HEIMDALL \n CRIME WATCH</string>
+    <string name="use_current_location">Use Current Location</string>
+    <string name="enter_postcode">Enter Postcode ▼</string>
+    <string name="enter_postcode_edittext">Enter Postcode</string>
+    <string name="submit">Submit</string>
+    <string name="saved_locations">Saved Locations ★</string>
+    <string name="crime_details">Crime Details</string>
+    <string name="crime">Crime</string>
+    <string name="outcome">Outcome</string>
+    <string name="location">Location</string>
+    <string name="category">Category:</string>
+    <string name="outcome_sign">Outcome:</string>
+    <string name="lat">Lat:</string>
+    <string name="back">Back</string>
+    <string name="saved_locations_title">Saved Locations</string>
+    <string name="delete_all">Delete All</string>
+    <string name="name_your_location_and_filter">Name your location and filter :</string>
+    <string name="crime_image">Crime Image</string>
+    <string name="list">LIST</string>
+    <string name="map">MAP</string>
+    <string name="show_filters">Show Filters ▼</string>
+    <string name="submit_filter">Submit Filter</string>
+    <string name="crime_in_this_area">Crime in this area:</string>
 </resources>

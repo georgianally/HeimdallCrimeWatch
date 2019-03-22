@@ -11,12 +11,11 @@ import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "CrimeDB.db";
-    public static final String LOCATIONS_TABLE_NAME = "savedLocations";
-    public static final String LOCATIONS_COLUMN_ID = "id";
-    public static final String LOCATIONS_COLUMN_NAME = "name";
-    public static final String LOCATIONS_COLUMN_LAT = "lat";
-    public static final String LOCATIONS_COLUMN_LNG = "lng";
+    private static final String DATABASE_NAME = "CrimeDB.db";
+    private static final String LOCATIONS_TABLE_NAME = "savedLocations";
+    private static final String LOCATIONS_COLUMN_NAME = "name";
+    private static final String LOCATIONS_COLUMN_LAT = "lat";
+    private static final String LOCATIONS_COLUMN_LNG = "lng";
 
     public DBHelper(Context context){
         super(context, DATABASE_NAME, null, 1);
@@ -43,25 +42,23 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertLocation(String name, String lat, String lng){
+    public void insertLocation(String name, String lat, String lng){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("name", name);
         contentValues.put("lat", lat);
         contentValues.put("lng", lng);
         db.insert("savedLocations", null, contentValues);
-        return true;
     }
+
     public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from savedLocations where id="+id+"", null );
-        return res;
+        return db.rawQuery( "select * from savedLocations where id="+id+"", null );
     }
 
     public int numberOfRows(){
         SQLiteDatabase db = this.getReadableDatabase();
-        int numRows = (int) DatabaseUtils.queryNumEntries(db, LOCATIONS_TABLE_NAME);
-        return numRows;
+        return (int) DatabaseUtils.queryNumEntries(db, LOCATIONS_TABLE_NAME);
     }
 
     public void deleteAll(){
@@ -72,36 +69,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public boolean updateLocation(Integer id, String name, String lat, String lng){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("name", name);
-        contentValues.put("lat", lat);
-        contentValues.put("lng", lng);
-        db.update("savedLocations", contentValues, "id = ? ", new String[] { Integer.toString(id) } );
-        return true;
-    }
-
-    public void deleteWithName (String name) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        /*return db.delete("savedLocations",
-                "id = ? ",
-                new String[] { Integer.toString(id) });*/
-        //Cursor res =  db.rawQuery( "delete from savedLocations where lat like "+lat+" and lng like "+lng+"", null );
-
-        db.delete(LOCATIONS_TABLE_NAME, LOCATIONS_COLUMN_NAME + " = ?",new String[]{String.valueOf(name)});
-        //db.close();
-    }
-
     public void deleteLocation (String lat, String lng) {
         SQLiteDatabase db = this.getWritableDatabase();
-        /*return db.delete("savedLocations",
-                "id = ? ",
-                new String[] { Integer.toString(id) });*/
-        //Cursor res =  db.rawQuery( "delete from savedLocations where lat like "+lat+" and lng like "+lng+"", null );
-
         db.delete("savedLocations", LOCATIONS_COLUMN_LAT + " =? AND " + LOCATIONS_COLUMN_LNG + "=?",new String[]{lat, lng});
-        //db.close();
     }
 
     public ArrayList<String> getSavedLocations() {
@@ -117,14 +87,12 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     private ArrayList<String> getStrings(String columnName) {
-        ArrayList<String> array_list = new ArrayList<String>();
-
-        //hp = new HashMap();
+        ArrayList<String> array_list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from savedLocations", null);
         res.moveToFirst();
 
-        while (res.isAfterLast() == false) {
+        while (!res.isAfterLast()) {
             array_list.add(res.getString(res.getColumnIndex(columnName)));
             res.moveToNext();
         }

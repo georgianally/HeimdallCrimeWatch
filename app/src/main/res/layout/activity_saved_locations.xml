@@ -7,13 +7,13 @@
     tools:context=".view.SavedLocationsActivity">
 
     <com.example.heimdallcrimewatch.model.Header
-        android:id="@+id/headerlayout"
+        android:id="@+id/header_layout"
         android:layout_width="411dp"
         android:layout_height="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></com.example.heimdallcrimewatch.model.Header>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -25,11 +25,11 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:gravity="center"
-        android:text="Saved Locations"
+        android:text="@string/saved_locations_title"
         android:textSize="36sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerlayout" />
+        app:layout_constraintTop_toBottomOf="@+id/header_layout" />
 
     <ListView
         android:id="@+id/locationsListView"
@@ -56,7 +56,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/btn_round_mid"
-        android:text="Delete All"
+        android:text="@string/delete_all"
         android:textColor="@color/buttonTextColour"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

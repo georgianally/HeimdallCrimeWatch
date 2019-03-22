@@ -10,11 +10,6 @@ import android.widget.TextView;
 import com.example.heimdallcrimewatch.R;
 
 public class Header extends RelativeLayout {
-    public static final String TAG = Header.class.getSimpleName();
-
-    protected ImageView icon;
-    private TextView label;
-
     public Header(Context context) {
         super(context);
     }
@@ -35,7 +30,7 @@ public class Header extends RelativeLayout {
         LayoutInflater inflater = (LayoutInflater) getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.header, this);
-        icon = (ImageView) findViewById(R.id.icon);
-        label = (TextView) findViewById(R.id.title);
+        ImageView icon = findViewById(R.id.icon);
+        TextView label = findViewById(R.id.title);
     }
 }

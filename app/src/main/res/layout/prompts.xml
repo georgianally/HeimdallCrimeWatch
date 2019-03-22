@@ -10,14 +10,15 @@
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Name your location and filter : "
+        android:text="@string/name_your_location_and_filter"
+        android:textColor="@color/backgroundColor"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <EditText
         android:id="@+id/editTextDialogUserInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/textColour">
+        android:textColor="@color/backgroundColor">
         <requestFocus />
     </EditText>
 

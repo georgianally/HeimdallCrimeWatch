@@ -9,38 +9,38 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.heimdallcrimewatch.R;
 import com.example.heimdallcrimewatch.model.DBHelper;
 import com.example.heimdallcrimewatch.model.Header;
-
 import java.util.ArrayList;
+
+import es.dmoral.toasty.Toasty;
 
 public class SavedLocationsActivity extends AppCompatActivity {
 
-    ListView locationList;
-    Button deleteAllButton;
-    ArrayList<String> locationData;
+    private ListView locationList;
+    private Button deleteAllButton;
+    private ArrayList<String> locationData;
 
     private DBHelper mydb;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saved_locations);
 
-        Header header = (Header) findViewById(R.id.headerlayout);
+        Header header = findViewById(R.id.header_layout);
         header.initHeader();
 
         mydb = new DBHelper(this);
 
-        locationList = (ListView) findViewById(R.id.locationsListView);
-        deleteAllButton = (Button) findViewById(R.id.deleteAllButton);
-        locationData = new ArrayList<String>();
+        locationList = findViewById(R.id.locationsListView);
+        deleteAllButton = findViewById(R.id.deleteAllButton);
+        locationData = new ArrayList<>();
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, locationData);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, locationData);
         locationList.setAdapter(adapter);
 
         initList(adapter);
@@ -59,11 +59,12 @@ public class SavedLocationsActivity extends AppCompatActivity {
                             Intent intent = new Intent(SavedLocationsActivity.this, DataDisplayActivity.class);
                             intent.putExtra("latitude", mydb.getSavedLat().get(i));
                             intent.putExtra("longitude", mydb.getSavedLng().get(i));
+                            rs.close();
+                            mydb.close();
                             startActivity(intent);
                             break;
                         }
                     }
-                    rs.close();
                 }
             }
         });
@@ -75,10 +76,9 @@ public class SavedLocationsActivity extends AppCompatActivity {
                 locationData.clear();
                 adapter.notifyDataSetChanged();
                 initList(adapter);
+                Toasty.error(SavedLocationsActivity.this, "Location(s) Deleted", Toast.LENGTH_SHORT, true).show();
             }
         });
-
-
     }
 
     public void onClicked(View view){

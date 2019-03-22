@@ -7,13 +7,13 @@
     tools:context=".view.DataDisplayActivity">
 
     <com.example.heimdallcrimewatch.model.Header
-        android:id="@+id/headerlayout"
+        android:id="@+id/header_layout"
         android:layout_width="411dp"
         android:layout_height="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></com.example.heimdallcrimewatch.model.Header>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
         android:id="@+id/crimeListView"
@@ -29,7 +29,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/submitFilterButton" />
+        app:layout_constraintTop_toBottomOf="@+id/crimeAmountTextView" />
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -43,7 +43,7 @@
         map:layout_constraintBottom_toTopOf="@+id/showMapButton"
         map:layout_constraintEnd_toEndOf="parent"
         map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toBottomOf="@+id/submitFilterButton"
+        map:layout_constraintTop_toBottomOf="@+id/crimeAmountTextView"
         tools:context=".view.DataDisplayActivity" />
 
     <ProgressBar
@@ -57,6 +57,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -69,7 +70,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="4dp"
         android:background="@drawable/btn_round_left"
-        android:text="LIST"
+        android:text="@string/list"
         android:textAllCaps="false"
         android:textColor="@color/buttonTextColour"
         app:layout_constraintBaseline_toBaselineOf="@+id/showMapButton"
@@ -93,7 +94,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/btn_round_right"
-        android:text="MAP"
+        android:text="@string/map"
         android:textAllCaps="false"
         android:textColor="@color/buttonTextColour"
         app:layout_constraintBottom_toTopOf="@+id/savedLocationsButton"
@@ -113,12 +114,12 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:background="@drawable/btn_round_mid"
-        android:text="Show Filters ▼"
+        android:text="@string/show_filters"
         android:textColor="@color/buttonTextColour"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/saveLocationCheckBox"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerlayout" />
+        app:layout_constraintTop_toBottomOf="@+id/header_layout" />
 
     <Spinner
         android:id="@+id/crimeSpinner"
@@ -130,6 +131,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:backgroundTint="@color/colorAccent"
+        android:popupBackground="@color/backgroundColor"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -145,7 +147,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:background="@drawable/btn_round_left"
-        android:text="Submit Filter"
+        android:text="@string/submit_filter"
         android:textColor="@color/buttonTextColour"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
@@ -161,6 +163,7 @@
         android:layout_marginTop="8dp"
         android:visibility="gone"
         android:backgroundTint="@color/colorAccent"
+        android:popupBackground="@color/backgroundColor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/crimeSpinner" />
 
@@ -174,6 +177,7 @@
         android:layout_marginRight="16dp"
         android:visibility="gone"
         android:backgroundTint="@color/colorAccent"
+        android:popupBackground="@color/backgroundColor"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="@+id/monthSpinner" />
@@ -188,7 +192,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/btn_round_mid"
-        android:text="Saved Locations ★"
+        android:text="@string/saved_locations"
         android:textColor="@color/buttonTextColour"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -205,5 +209,19 @@
         android:checked="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/crimeAmountTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/crime_in_this_area"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/submitFilterButton" />
 
 </android.support.constraint.ConstraintLayout>

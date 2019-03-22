@@ -6,6 +6,6 @@
     <color name="backgroundColor">#333333</color>
     <color name="textColour">#ECE9E6</color>
     <color name="buttonTextColour">#333333</color>
-    <color name="buttonGradient1">#ECE9E6</color>
+    <color name="buttonGradient1">#EEE9E4</color>
     <color name="buttonGradient2">#FFFFFF</color>
 </resources>

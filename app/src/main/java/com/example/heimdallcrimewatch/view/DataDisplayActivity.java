@@ -3,12 +3,11 @@ package com.example.heimdallcrimewatch.view;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
+import android.text.Html;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,13 +16,13 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -34,59 +33,68 @@ import com.example.heimdallcrimewatch.R;
 import com.example.heimdallcrimewatch.model.Crime;
 import com.example.heimdallcrimewatch.model.DBHelper;
 import com.example.heimdallcrimewatch.model.Header;
+import com.example.heimdallcrimewatch.model.MapItem;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
+
+import es.dmoral.toasty.Toasty;
 
 
-public class DataDisplayActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class DataDisplayActivity extends AppCompatActivity implements OnMapReadyCallback,
+        ClusterManager.OnClusterItemInfoWindowClickListener<MapItem> {
 
-    final Context context = this;
+    private final Context context = this;
 
-    String lat;
-    String lng;
+    private String lat;
+    private String lng;
 
     private GoogleMap mMap;
-    boolean mapReady = false;
+    private boolean mapReady = false;
+    private MapItem clickedClusterItem;
 
-    Button filterButton;
-    Button submitFilterButton;
-    Spinner crimeSpinner;
-    Spinner monthSpinner;
-    Spinner yearSpinner;
-    Button savedLocationsButton;
-    CheckBox saveLocationCheckBox;
-    Button showMapButton;
-    Button showListButton;
+    private Button filterButton;
+    private Button submitFilterButton;
+    private Spinner crimeSpinner;
+    private Spinner monthSpinner;
+    private Spinner yearSpinner;
+    private Button savedLocationsButton;
+    private CheckBox saveLocationCheckBox;
+    private Button showMapButton;
+    private Button showListButton;
+    private TextView crimeAmountTextView;
 
     private DBHelper mydb;
 
-    ProgressBar apiLoading;
+    private ProgressBar apiLoading;
 
-    ListView crimeList;
-    ArrayList<String> crimeData;
-    ArrayList<Crime> crimeObjects;
-    RequestQueue requestQueue;
+    private ListView crimeList;
+    private ArrayList<String> crimeData;
+    private ArrayList<Crime> crimeObjects;
+    private RequestQueue requestQueue;
 
-    String baseURL = "https://data.police.uk/api/crimes-street/";
-    String url;
+    private final String baseURL = "https://data.police.uk/api/crimes-street/";
+    private String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_display);
 
-        Header header = (Header) findViewById(R.id.headerlayout);
+        Header header = findViewById(R.id.header_layout);
         header.initHeader();
 
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -101,17 +109,18 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         lat = bundle.getString("latitude");
         lng = bundle.getString("longitude");
 
-        crimeList = (ListView) findViewById(R.id.crimeListView);
-        apiLoading = (ProgressBar) findViewById(R.id.progressBar);
-        filterButton = (Button) findViewById(R.id.filtersButton);
-        showListButton = (Button) findViewById(R.id.showListButton);
-        showMapButton = (Button) findViewById(R.id.showMapButton);
-        submitFilterButton = (Button) findViewById(R.id.submitFilterButton);
-        savedLocationsButton = (Button) findViewById(R.id.savedLocationsButton);
-        crimeSpinner = (Spinner) findViewById(R.id.crimeSpinner);
-        monthSpinner = (Spinner) findViewById(R.id.monthSpinner);
-        yearSpinner = (Spinner) findViewById(R.id.yearSpinner);
-        saveLocationCheckBox = (CheckBox) findViewById(R.id.saveLocationCheckBox);
+        crimeList = findViewById(R.id.crimeListView);
+        apiLoading = findViewById(R.id.progressBar);
+        filterButton = findViewById(R.id.filtersButton);
+        showListButton = findViewById(R.id.showListButton);
+        showMapButton = findViewById(R.id.showMapButton);
+        submitFilterButton = findViewById(R.id.submitFilterButton);
+        savedLocationsButton = findViewById(R.id.savedLocationsButton);
+        crimeSpinner = findViewById(R.id.crimeSpinner);
+        monthSpinner = findViewById(R.id.monthSpinner);
+        yearSpinner = findViewById(R.id.yearSpinner);
+        saveLocationCheckBox = findViewById(R.id.saveLocationCheckBox);
+        crimeAmountTextView = findViewById(R.id.crimeAmountTextView);
 
 
         final ArrayAdapter<String> crimeArray = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
@@ -162,45 +171,11 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         saveLocationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked && !checkDatabaseLatLng() ){
-                    LayoutInflater li = LayoutInflater.from(context);
-                    View promptsView = li.inflate(R.layout.prompts, null);
-
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                            context);
-
-                    // set prompts.xml to alertdialog builder
-                    alertDialogBuilder.setView(promptsView);
-
-                    final EditText userInput = (EditText) promptsView
-                            .findViewById(R.id.editTextDialogUserInput);
-
-                    // set dialog message
-                    alertDialogBuilder
-                            .setCancelable(false)
-                            .setPositiveButton("Save",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            mydb.insertLocation(userInput.getText().toString(), lat, lng);
-                                        }
-                                    })
-                            .setNegativeButton("Cancel",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog,int id) {
-                                            dialog.cancel();
-                                            saveLocationCheckBox.setChecked(false);
-                                        }
-                                    });
-
-                    // create alert dialog
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-
-                    // show it
-                    alertDialog.show();
-
-                } else if(!isChecked && checkDatabaseLatLng()){
+                if (isChecked && !checkDatabaseLatLng()) {
+                    saveLocation();
+                } else if (!isChecked && checkDatabaseLatLng()) {
                     mydb.deleteLocation(lat, lng);
-                    Toast toast = Toast.makeText(getApplicationContext(), "Unchecked", Toast.LENGTH_SHORT); toast.show();
+                    Toasty.error(DataDisplayActivity.this, "Location Deleted", Toast.LENGTH_SHORT, true).show();
                 }
             }
         });
@@ -218,10 +193,9 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         showMapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleView(apiLoading);
                 toggleView(crimeList);
+                setMapMarkers();
                 mapFragment.getView().setVisibility(View.VISIBLE);
-                toggleView(apiLoading);
             }
         });
 
@@ -230,8 +204,9 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
             @Override
             public void onClick(View v) {
                 mapFragment.getView().setVisibility(View.INVISIBLE);
-                if(crimeList.getVisibility() == View.GONE){
-                toggleView(crimeList);}
+                if (crimeList.getVisibility() == View.GONE) {
+                    toggleView(crimeList);
+                }
             }
         });
 
@@ -239,85 +214,24 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         apiRequest();
     }
 
-    private void setMapMarkers() {
-        if(mapReady) {
-            mMap.clear();
-            for (int i = 0; i < crimeObjects.size(); i++) {
-                LatLng location = new LatLng(Double.parseDouble(crimeObjects.get(i).getLatitude()), Double.parseDouble(crimeObjects.get(i).getLongitude()));
-                Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(crimeObjects.get(i).getStreetName()).snippet(capitaliseFirstLetter(crimeObjects.get(i).getCategory()) + "\n" + crimeObjects.get(i).getMonth() + "\n" + crimeObjects.get(i).getOutcomeCategory()));
-                marker.setTag(crimeObjects.get(i).getId());
-            }
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        toggleView(apiLoading);
-
-        if(checkDatabaseLatLng()){
+        if (checkDatabaseLatLng()) {
             saveLocationCheckBox.setChecked(true);
-        }
-        else{
+        } else {
             saveLocationCheckBox.setChecked(false);
         }
     }
 
-    //Check if current lat and lng are stored in the database - if this location is already saved
-    private boolean checkDatabaseLatLng() {
-        if(mydb.getSavedLat().contains(lat) && mydb.getSavedLng().contains(lng)){
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    public void onClicked(View view){
-        Intent intent = new Intent(DataDisplayActivity.this, MainActivity.class);
-        this.finish();
-        startActivity(intent);
-    }
-
-    //Takes to more details page
-    public void moreDetailsActivity(int position, boolean isMap) {
-        Crime crime = null;
-        if(isMap){
-            for (int i = 0; i < crimeObjects.size(); i++) {
-                if(String.valueOf(position).equals(crimeObjects.get(i).getId())){
-                    crime = crimeObjects.get(i);
-                    break;
-                }
-            }
-        } else { crime = crimeObjects.get(position); }
-
-        Intent intent = new Intent(DataDisplayActivity.this, MoreDetailsActivity.class);
-        intent.putExtra("crimeData", crime);
-        startActivity(intent);
-    }
-
-    public void toggleView(View view){
-        if(view.getVisibility()==View.GONE)
-            view.setVisibility(View.VISIBLE);
-        else if(view.getVisibility()==View.VISIBLE)
-            view.setVisibility(View.GONE);
-    }
-
-    private void setURL(String lat, String lng){
-        this.url = this.baseURL + "allcrime?lat=" + lat + "&lng=" + lng + "&date=2018-06";
-    }
-
-    private void setURL(String lat, String lng, String crime, String year, String month){
-        this.url = this.baseURL + crime + "?lat=" + lat + "&lng=" + lng + "&date=" + year + "-" + month;
-    }
-
-    public void apiRequest () {
+    //*******************************API Request Methods
+    private void apiRequest() {
         toggleView(apiLoading);
         requestQueue = Volley.newRequestQueue(this);
-        crimeData = new ArrayList<String>();
-        crimeObjects = new ArrayList<Crime>();
+        crimeData = new ArrayList<>();
+        crimeObjects = new ArrayList<>();
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, crimeData);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, crimeData);
         crimeList.setAdapter(adapter);
         try {
             StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -328,28 +242,11 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
                                 JSONArray array = new JSONArray(response);
                                 for (int i = 0; i < array.length(); i++) {
                                     JSONObject object = array.optJSONObject(i);
-
-                                    String id = object.get("id").toString();
-                                    String category = object.get("category").toString();
-                                    String locationType = object.get("location_type").toString();
-                                    String month = object.get("month").toString();
-                                    String streetName = object.getJSONObject("location").getJSONObject("street").get("name").toString();
-                                    String latitude = object.getJSONObject("location").get("latitude").toString();
-                                    String longitude = object.getJSONObject("location").get("longitude").toString();
-                                    String outcomeCategory;
-                                    String outcomeDate;
-                                    if(object.isNull("outcome_status")){
-                                        outcomeCategory = "No Data";
-                                        outcomeDate = "No Data";
-                                    } else {
-                                        outcomeCategory = object.getJSONObject("outcome_status").get("category").toString();
-                                        outcomeDate = object.getJSONObject("outcome_status").get("date").toString();
-                                    }
-
-                                    Crime crime = new Crime(id, category, locationType, month, streetName, latitude, longitude, outcomeCategory, outcomeDate);
+                                    Crime crime = new Crime(object);
                                     updateList(crime);
                                 }
                                 toggleView(apiLoading);
+                                crimeAmountTextView.setText("Crime in this area: " + crimeData.size());
                                 adapter.notifyDataSetChanged();
                                 setMapMarkers();
                             } catch (JSONException e) {
@@ -359,6 +256,19 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
+                    NetworkResponse networkResponse = error.networkResponse;
+                    switch(networkResponse.statusCode){
+                        case 404:
+                            Toasty.error(DataDisplayActivity.this, "Location Not Found", Toast.LENGTH_LONG, true).show();
+                            break;
+                        case 500:
+                            Toasty.error(DataDisplayActivity.this, "Internal Server Error", Toast.LENGTH_LONG, true).show();
+                            break;
+                        default:
+                            Toasty.error(DataDisplayActivity.this, "Error", Toast.LENGTH_LONG, true).show();
+                            break;
+                    }
+                    toggleView(apiLoading);
                 }
             });
             requestQueue.add(stringRequest);
@@ -367,104 +277,203 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
-    public void updateList(Crime crime){
-        crimeData.add(setImage(crime.getCategory()) + " Category: " + capitaliseFirstLetter(crime.getCategory()) + "\n Location: " + crime.getStreetName() +
-                "\n Month: " + crime.getMonth() + "\n Outcome: " + crime.getOutcomeCategory());
+    private void updateList(Crime crime) {
+        crimeData.add(crime.getImage() + " Category: " + capitaliseFirstLetter(crime.getCategory()) + "\n Location: " + crime.getStreetName() +
+                "\n Month: " + crime.getMonth() + "\n Outcome: " + crime.getOutcomeCategory() + "\n");
         crimeObjects.add(crime);
     }
 
-    private String setImage(String categoryText) {
-        String icon = "❌";
-        switch (categoryText){
-            case "anti-social-behaviour":
-                icon = "🗯️";
-                break;
-            case "bicycle-theft":
-                icon = "🚲";
-                break;
-            case "burglary":
-            case "other-theft":
-            case "robbery":
-            case "shoplifting":
-            case "theft-from-the-person":
-                icon = "💰";
-                break;
-            case "criminal-damage-arson":
-                icon = "🔨";
-                break;
-            case "drugs":
-                icon = "💊";
-                break;
-            case "possession-of-weapons":
-                icon = "🗡";
-                break;
-            case "public-order":
-                icon = "👎";
-                break;
-            case "vehicle-crime":
-                icon = "🚗";
-                break;
-            case "violent-crime":
-                icon = "🤜";
-                break;
-            case "other-crime":
-                icon = "❌";
-                break;
-        }
-        return icon;
+    private void setURL(String lat, String lng) {
+        this.url = this.baseURL + "allcrime?lat=" + lat + "&lng=" + lng + "&date=2018-06";
     }
 
+    private void setURL(String lat, String lng, String crime, String year, String month) {
+        this.url = this.baseURL + crime + "?lat=" + lat + "&lng=" + lng + "&date=" + year + "-" + month;
+    }
+
+    //*******************************Saving Locations and Database
+    private void saveLocation() {
+        LayoutInflater li = LayoutInflater.from(context);
+        View promptsView = li.inflate(R.layout.prompts, null);
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+
+        // set prompts.xml to alertdialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText userInput = promptsView
+                .findViewById(R.id.editTextDialogUserInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton((Html.fromHtml("<font color='#333333'>Save</font>")),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                if(TextUtils.isEmpty(userInput.getText().toString().trim())) {
+                                    Toasty.warning(DataDisplayActivity.this, "Enter Name for Location \n Location not Saved!", Toast.LENGTH_LONG, true).show();
+                                    saveLocationCheckBox.setChecked(false);
+                                    saveLocation();
+                                }
+                                else{
+                                    mydb.insertLocation(userInput.getText().toString(), lat, lng);
+                                    saveLocationCheckBox.setChecked(true);
+                                    Toasty.success(DataDisplayActivity.this, "Location Saved", Toast.LENGTH_SHORT, true).show();
+                                }
+                            }
+                        })
+                .setNegativeButton(Html.fromHtml("<font color='#333333'>Cancel</font>"),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                                saveLocationCheckBox.setChecked(false);
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    //Check if current lat and lng are stored in the database - if this location is already saved
+    private boolean checkDatabaseLatLng() {
+        return mydb.getSavedLat().contains(lat) && mydb.getSavedLng().contains(lng);
+    }
+
+    //Takes to more details page
+    private void moreDetailsActivity(int position, boolean isMap) {
+        Crime crime = null;
+        if (isMap) {
+            for (int i = 0; i < crimeObjects.size(); i++) {
+                if (String.valueOf(position).equals(crimeObjects.get(i).getId())) {
+                    crime = crimeObjects.get(i);
+                    break;
+                }
+            }
+        } else {
+            crime = crimeObjects.get(position);
+        }
+
+        Intent intent = new Intent(DataDisplayActivity.this, MoreDetailsActivity.class);
+        intent.putExtra("crimeData", crime);
+        startActivity(intent);
+    }
+
+    //******************************* ETC Methods
+    private void toggleView(View view) {
+        if (view.getVisibility() == View.GONE)
+            view.setVisibility(View.VISIBLE);
+        else if (view.getVisibility() == View.VISIBLE)
+            view.setVisibility(View.GONE);
+    }
+
+    private static String capitaliseFirstLetter(String name) {
+        return name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    public void onClicked(View view) {
+        Intent intent = new Intent(DataDisplayActivity.this, MainActivity.class);
+        this.finish();
+        startActivity(intent);
+    }
+
+    //*******************************Map Methods
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mapReady = true;
         mMap = googleMap;
         LatLng startingLocation = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
-
-        float zoomLevel = (float) 15.0; //This goes up to 21
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startingLocation, zoomLevel));
-
-        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
-
-            @Override
-            public View getInfoWindow(Marker arg0) {
-                return null;
-            }
-
-            @Override
-            public View getInfoContents(Marker marker) {
-
-                Context context = getApplicationContext(); //or getActivity(), YourActivity.this, etc.
-
-                LinearLayout info = new LinearLayout(context);
-                info.setOrientation(LinearLayout.VERTICAL);
-
-                TextView title = new TextView(context);
-                title.setTextColor(Color.BLACK);
-                title.setGravity(Gravity.CENTER);
-                title.setTypeface(null, Typeface.BOLD);
-                title.setText(marker.getTitle());
-
-                TextView snippet = new TextView(context);
-                snippet.setTextColor(Color.GRAY);
-                snippet.setText(marker.getSnippet());
-
-                info.addView(title);
-                info.addView(snippet);
-
-                return info;
-            }
-        });
-
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-            @Override
-            public void onInfoWindowClick(Marker marker) {
-                String id = marker.getTag().toString();
-                moreDetailsActivity(Integer.parseInt(id), true);
-            }
-        });
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startingLocation, 14));
     }
 
-    static String capitaliseFirstLetter(String name){
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
+    private void setMapMarkers() {
+        if (mapReady) {
+            mMap.clear();
+            ClusterManager<MapItem> clusterManager = new ClusterManager<>(this, mMap);
+
+            mMap.setOnCameraIdleListener(clusterManager);
+            mMap.setOnMarkerClickListener(clusterManager);
+            mMap.setInfoWindowAdapter(clusterManager.getMarkerManager());
+            mMap.setOnInfoWindowClickListener(clusterManager);
+            clusterManager.setOnClusterItemInfoWindowClickListener(this);
+            clusterManager.setRenderer(new CustomRenderer<>(this, mMap, clusterManager));
+
+            clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<MapItem>() {
+                public boolean onClusterItemClick(MapItem item) {
+                    clickedClusterItem = item;
+                    return false;
+                }
+            });
+
+
+        for (int i = 0; i < crimeObjects.size(); i++) {
+                Collection<Marker> markers = clusterManager.getClusterMarkerCollection().getMarkers();
+                ArrayList<Marker> markerList = new ArrayList<>(markers);
+                double finalLat = Double.parseDouble(crimeObjects.get(i).getLatitude());
+                double finalLng = Double.parseDouble(crimeObjects.get(i).getLongitude());
+                LatLng testLatLng = new LatLng(finalLat, finalLng);
+
+                //If current marker is in same position as an exisiting marker, randomise location so they don't stack
+                //Offset marker to try and fix clustering stack not breaking - overlapping markers
+                if(markerList.size() != 0){
+                    for(i=0; i < markerList.size(); i++){
+                        Marker exisitingMarker = markerList.get(i);
+                        LatLng position = exisitingMarker.getPosition();
+
+                        if(testLatLng.equals(position)){
+                            finalLat = testLatLng.latitude + (Math.random() * 1.000010) + .999999;
+                             finalLng = testLatLng.longitude + (Math.random() * 1.010010) + .999999;
+                        }
+                    }
+                }
+
+                MapItem marker = new MapItem(finalLat, finalLng, capitaliseFirstLetter(crimeObjects.get(i).getCategory()),
+                        capitaliseFirstLetter(crimeObjects.get(i).getOutcomeCategory()) + "\n" + crimeObjects.get(i).getMonth() + "\n" + crimeObjects.get(i).getStreetName(), crimeObjects.get(i).getId());
+                clusterManager.addItem(marker);
+            }
+            clusterManager.cluster();
+            clusterManager.getMarkerCollection().setOnInfoWindowAdapter(new CustomAdapterForItems());
+        }
+    }
+
+    public void onClusterItemInfoWindowClick(MapItem marker) {
+        String id = marker.getTag();
+        moreDetailsActivity(Integer.parseInt(id), true);
+    }
+
+    class CustomAdapterForItems implements GoogleMap.InfoWindowAdapter {
+
+        private final View myContentsView;
+
+        CustomAdapterForItems() {
+            myContentsView = getLayoutInflater().inflate(
+                    R.layout.info_window, null);
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            TextView tvTitle = myContentsView
+                    .findViewById(R.id.txtTitle);
+            TextView tvSnippet = myContentsView
+                    .findViewById(R.id.txtSnippet);
+
+            tvTitle.setText(clickedClusterItem.getTitle());
+            tvSnippet.setText(clickedClusterItem.getSnippet());
+            return myContentsView;
+        }
+    }
+    class CustomRenderer<T extends MapItem> extends DefaultClusterRenderer<T> {
+        CustomRenderer(Context context, GoogleMap map, ClusterManager<T> clusterManager) {
+            super(context, map, clusterManager);
+            setMinClusterSize(30);
+        }
     }
 }
