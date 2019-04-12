@@ -1,7 +1,9 @@
 package com.example.heimdallcrimewatch.view;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -35,6 +37,9 @@ public class SavedLocationsActivity extends AppCompatActivity {
         header.initHeader();
 
         mydb = new DBHelper(this);
+        if(mydb.numberOfRows() == 0){
+            mydb.dummyData();
+        }
 
         locationList = findViewById(R.id.locationsListView);
         deleteAllButton = findViewById(R.id.deleteAllButton);
@@ -72,14 +77,32 @@ public class SavedLocationsActivity extends AppCompatActivity {
         deleteAllButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mydb.deleteAll();
-                locationData.clear();
-                adapter.notifyDataSetChanged();
-                initList(adapter);
-                Toasty.error(SavedLocationsActivity.this, "Location(s) Deleted", Toast.LENGTH_SHORT, true).show();
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                mydb.deleteAll();
+                                locationData.clear();
+                                adapter.notifyDataSetChanged();
+                                initList(adapter);
+                                Toasty.error(SavedLocationsActivity.this, "Location(s) Deleted", Toast.LENGTH_SHORT, true).show();
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(SavedLocationsActivity.this);
+                builder.setMessage("Are you sure you want to delete all locations?").setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
             }
         });
     }
+
 
     public void onClicked(View view){
         Intent intent = new Intent(SavedLocationsActivity.this, MainActivity.class);

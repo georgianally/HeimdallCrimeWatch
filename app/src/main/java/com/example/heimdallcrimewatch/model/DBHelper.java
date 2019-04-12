@@ -29,7 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
         //dummyData();
     }
 
-    private void dummyData() {
+    public void dummyData() {
         insertLocation("dummyData", "1", "2");
         insertLocation("London Bridge Station", "51.504674", "-0.086006");
         insertLocation("Blackpool Tower", "53.815949", "-3.054943");
@@ -59,6 +59,11 @@ public class DBHelper extends SQLiteOpenHelper {
     public int numberOfRows(){
         SQLiteDatabase db = this.getReadableDatabase();
         return (int) DatabaseUtils.queryNumEntries(db, LOCATIONS_TABLE_NAME);
+    }
+
+    //Check if current lat and lng are stored in the database - if this location is already saved
+    public boolean checkDatabaseLatLng(String lat, String lng) {
+        return this.getSavedLat().contains(lat) && this.getSavedLng().contains(lng);
     }
 
     public void deleteAll(){

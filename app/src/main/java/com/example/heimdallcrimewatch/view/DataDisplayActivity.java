@@ -42,7 +42,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
-import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +66,7 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
     private MapItem clickedClusterItem;
 
     private Button filterButton;
+    private Button refreshButton;
     private Button submitFilterButton;
     private Spinner crimeSpinner;
     private Spinner monthSpinner;
@@ -88,6 +88,8 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
 
     private final String baseURL = "https://data.police.uk/api/crimes-street/";
     private String url;
+
+     ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +123,7 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         yearSpinner = findViewById(R.id.yearSpinner);
         saveLocationCheckBox = findViewById(R.id.saveLocationCheckBox);
         crimeAmountTextView = findViewById(R.id.crimeAmountTextView);
+        refreshButton = findViewById(R.id.refreshButton);
 
 
         final ArrayAdapter<String> crimeArray = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
@@ -159,6 +162,13 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
             }
         });
 
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                apiRequest();
+            }
+        });
+
         //Click on list item
         crimeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -171,9 +181,9 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         saveLocationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked && !checkDatabaseLatLng()) {
+                if (isChecked && !mydb.checkDatabaseLatLng(lat, lng)) {
                     saveLocation();
-                } else if (!isChecked && checkDatabaseLatLng()) {
+                } else if (!isChecked && mydb.checkDatabaseLatLng(lat, lng)) {
                     mydb.deleteLocation(lat, lng);
                     Toasty.error(DataDisplayActivity.this, "Location Deleted", Toast.LENGTH_SHORT, true).show();
                 }
@@ -217,7 +227,7 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
     @Override
     protected void onResume() {
         super.onResume();
-        if (checkDatabaseLatLng()) {
+        if (mydb.checkDatabaseLatLng(lat, lng)) {
             saveLocationCheckBox.setChecked(true);
         } else {
             saveLocationCheckBox.setChecked(false);
@@ -231,7 +241,7 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
         crimeData = new ArrayList<>();
         crimeObjects = new ArrayList<>();
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, crimeData);
+         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, crimeData);
         crimeList.setAdapter(adapter);
         try {
             StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -257,16 +267,18 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     NetworkResponse networkResponse = error.networkResponse;
-                    switch(networkResponse.statusCode){
-                        case 404:
-                            Toasty.error(DataDisplayActivity.this, "Location Not Found", Toast.LENGTH_LONG, true).show();
-                            break;
-                        case 500:
-                            Toasty.error(DataDisplayActivity.this, "Internal Server Error", Toast.LENGTH_LONG, true).show();
-                            break;
-                        default:
-                            Toasty.error(DataDisplayActivity.this, "Error", Toast.LENGTH_LONG, true).show();
-                            break;
+                    if(networkResponse != null) {
+                        switch (networkResponse.statusCode) {
+                            case 404:
+                                Toasty.error(DataDisplayActivity.this, "Location Not Found", Toast.LENGTH_LONG, true).show();
+                                break;
+                            case 500:
+                                Toasty.error(DataDisplayActivity.this, "Internal Server Error", Toast.LENGTH_LONG, true).show();
+                                break;
+                            default:
+                                Toasty.error(DataDisplayActivity.this, "Error", Toast.LENGTH_LONG, true).show();
+                                break;
+                        }
                     }
                     toggleView(apiLoading);
                 }
@@ -336,11 +348,6 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
 
         // show it
         alertDialog.show();
-    }
-
-    //Check if current lat and lng are stored in the database - if this location is already saved
-    private boolean checkDatabaseLatLng() {
-        return mydb.getSavedLat().contains(lat) && mydb.getSavedLng().contains(lng);
     }
 
     //Takes to more details page

@@ -88,23 +88,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /*
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-
-                }
-                return;
-            }
-        }
-    }
-    */
-
     private void toggleView(View view){
         if(view.getVisibility()==View.GONE)
             view.setVisibility(View.VISIBLE);
@@ -115,8 +98,13 @@ public class MainActivity extends AppCompatActivity {
     private void getLocation() {
         try {
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            lat = String.valueOf(location.getLatitude());
-            lng = String.valueOf(location.getLongitude());
+            if(location != null) {
+                lat = String.valueOf(location.getLatitude());
+                lng = String.valueOf(location.getLongitude());
+            }else{
+                lat = "51.279643";
+                lng = "1.089364";
+            }
         }
         catch(SecurityException e) {
             e.printStackTrace();

@@ -40,7 +40,7 @@
         <item>2018</item>
     </string-array>
     <string name="title_activity_maps">Map</string>
-    <string name="heimdall_ncrime_watch">HEIMDALL \n CRIME WATCH</string>
+    <string name="heimdall_ncrime_watch">HEIMDALL\nCRIME WATCH</string>
     <string name="use_current_location">Use Current Location</string>
     <string name="enter_postcode">Enter Postcode ▼</string>
     <string name="enter_postcode_edittext">Enter Postcode</string>
