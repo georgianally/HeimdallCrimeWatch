@@ -65,10 +65,6 @@ public class Crime implements Parcelable {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getLatitude() {
         return latitude;
     }
@@ -118,7 +114,6 @@ public class Crime implements Parcelable {
     }
 
 //parcel stuff
-
     @Override
     public int describeContents() {
         return 0;

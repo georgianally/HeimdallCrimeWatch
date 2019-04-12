@@ -18,7 +18,9 @@
         android:id="@+id/editTextDialogUserInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/backgroundColor">
+        android:textColor="@color/backgroundColor"
+        android:hint="Location Name"
+        android:inputType="text">
         <requestFocus />
     </EditText>
 

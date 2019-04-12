@@ -26,18 +26,12 @@ import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button currentLocationButton;
-    private Button enterPostcodeButton;
     private Button submitPostcodeButton;
     private EditText postcodePlainText;
-    private Button savedLocationsButton;
 
     private static String lat;
     private static String lng;
 
-    private RequestQueue requestQueue;
-    private final String baseURL = "https://api.postcodes.io/postcodes/";
-    private String url;
     private LocationManager locationManager;
 
     @Override
@@ -45,10 +39,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        currentLocationButton = findViewById(R.id.currentLocationButton);
-        enterPostcodeButton = findViewById(R.id.enterPostcodeButton);
+        Button currentLocationButton = findViewById(R.id.currentLocationButton);
+        Button enterPostcodeButton = findViewById(R.id.enterPostcodeButton);
         submitPostcodeButton = findViewById(R.id.submitPostcodeButton);
-        savedLocationsButton = findViewById(R.id.savedLocationsButton);
+        Button savedLocationsButton = findViewById(R.id.savedLocationsButton);
         postcodePlainText = findViewById(R.id.postcodePlainText);
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -114,8 +108,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void convertPostcode(){
-        requestQueue = Volley.newRequestQueue(this);
-        this.url = this.baseURL + postcodePlainText.getText().toString();
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String baseURL = "https://api.postcodes.io/postcodes/";
+        String url = baseURL + postcodePlainText.getText().toString();
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, (String)null, new Response.Listener<JSONObject>() {

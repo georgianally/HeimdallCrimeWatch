@@ -65,16 +65,11 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
     private boolean mapReady = false;
     private MapItem clickedClusterItem;
 
-    private Button filterButton;
-    private Button refreshButton;
     private Button submitFilterButton;
     private Spinner crimeSpinner;
     private Spinner monthSpinner;
     private Spinner yearSpinner;
-    private Button savedLocationsButton;
     private CheckBox saveLocationCheckBox;
-    private Button showMapButton;
-    private Button showListButton;
     private TextView crimeAmountTextView;
 
     private DBHelper mydb;
@@ -84,12 +79,11 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
     private ListView crimeList;
     private ArrayList<String> crimeData;
     private ArrayList<Crime> crimeObjects;
-    private RequestQueue requestQueue;
 
     private final String baseURL = "https://data.police.uk/api/crimes-street/";
     private String url;
 
-     ArrayAdapter<String> adapter;
+     private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,17 +107,17 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
 
         crimeList = findViewById(R.id.crimeListView);
         apiLoading = findViewById(R.id.progressBar);
-        filterButton = findViewById(R.id.filtersButton);
-        showListButton = findViewById(R.id.showListButton);
-        showMapButton = findViewById(R.id.showMapButton);
+        Button filterButton = findViewById(R.id.filtersButton);
+        Button showListButton = findViewById(R.id.showListButton);
+        Button showMapButton = findViewById(R.id.showMapButton);
         submitFilterButton = findViewById(R.id.submitFilterButton);
-        savedLocationsButton = findViewById(R.id.savedLocationsButton);
+        Button savedLocationsButton = findViewById(R.id.savedLocationsButton);
         crimeSpinner = findViewById(R.id.crimeSpinner);
         monthSpinner = findViewById(R.id.monthSpinner);
         yearSpinner = findViewById(R.id.yearSpinner);
         saveLocationCheckBox = findViewById(R.id.saveLocationCheckBox);
         crimeAmountTextView = findViewById(R.id.crimeAmountTextView);
-        refreshButton = findViewById(R.id.refreshButton);
+        Button refreshButton = findViewById(R.id.refreshButton);
 
 
         final ArrayAdapter<String> crimeArray = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
@@ -237,7 +231,7 @@ public class DataDisplayActivity extends AppCompatActivity implements OnMapReady
     //*******************************API Request Methods
     private void apiRequest() {
         toggleView(apiLoading);
-        requestQueue = Volley.newRequestQueue(this);
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
         crimeData = new ArrayList<>();
         crimeObjects = new ArrayList<>();
 

@@ -20,10 +20,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MoreDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
     private ImageView categoryImageView;
 
-    private TextView crimeData;
-    private TextView outcomeData;
-    private TextView locationData;
-    private Button backButton;
     private String categoryText;
     private Crime crime;
 
@@ -40,10 +36,10 @@ public class MoreDetailsActivity extends AppCompatActivity implements OnMapReady
         mapFragment.getMapAsync(this);
 
         categoryImageView = findViewById(R.id.categoryImageView);
-        crimeData = findViewById(R.id.crimeDataTextview);
-        outcomeData = findViewById(R.id.outcomeDataTextView);
-        locationData = findViewById(R.id.locationDataTextView);
-        backButton = findViewById(R.id.backButton);
+        TextView crimeData = findViewById(R.id.crimeDataTextview);
+        TextView outcomeData = findViewById(R.id.outcomeDataTextView);
+        TextView locationData = findViewById(R.id.locationDataTextView);
+        Button backButton = findViewById(R.id.backButton);
 
         Bundle bundle = getIntent().getExtras();
         crime = bundle.getParcelable("crimeData");
@@ -73,10 +69,9 @@ public class MoreDetailsActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        GoogleMap mMap = googleMap;
         LatLng location = new LatLng(Double.parseDouble(crime.getLatitude()), Double.parseDouble(crime.getLongitude()));
-        mMap.addMarker(new MarkerOptions().position(location).title(categoryText));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 16));
+        googleMap.addMarker(new MarkerOptions().position(location).title(categoryText));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 16));
     }
 
     public void onClicked(View view){

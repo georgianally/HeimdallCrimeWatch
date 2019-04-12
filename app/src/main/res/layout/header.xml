@@ -21,7 +21,8 @@
             android:layout_height="81dp"
             android:layout_weight="1"
             android:onClick="onClicked"
-            app:srcCompat="@drawable/heimdall3" />
+            app:srcCompat="@drawable/heimdall3"
+            android:contentDescription="Logo" />
 
         <TextView
             android:id="@+id/title"
